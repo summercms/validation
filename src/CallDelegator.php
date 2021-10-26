@@ -3,7 +3,7 @@
 namespace Intervention\Validation;
 
 use Illuminate\Contracts\Validation\Rule;
-use Intervention\Validation\Exception\NotExistingRuleException;
+use Intervention\Validation\Exceptions\NotExistingRuleException;
 
 class CallDelegator
 {
@@ -33,7 +33,7 @@ class CallDelegator
         $this->arguments = $arguments;
     }
 
-    public function getAction(): string
+    protected function getAction(): string
     {
         switch ($this->parse('action')) {
             case 'assert':
@@ -42,6 +42,11 @@ class CallDelegator
             default:
                 return 'validate';
         }
+    }
+
+    public function isAssertion(): bool
+    {
+        return $this->getAction() === 'assert';
     }
 
     /**
@@ -90,7 +95,7 @@ class CallDelegator
 
         if (! class_exists($classname)) {
             throw new NotExistingRuleException(
-                "Error: Unable to create not existing rule (" . $classname . ")"
+                "Rule does not exist (" . $classname . ")"
             );
         }
 

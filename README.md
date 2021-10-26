@@ -14,93 +14,23 @@ Require the package via Composer:
 
     $ composer require intervention/validation
 
-### Laravel integration (optional)
+## Laravel integration
 
-The Validation library is built to work with the Laravel Framework (>=7). It comes with a service provider, which will be discovered automatically and registers the validation rules into your installation.
-
-## Usage
-
-```php
-use Intervention\Validation\Validator;
-use Intervention\Validation\Rules\HexColor;
-use Intervention\Validation\Exception\ValidationException;
-
-// create validator with rules
-$validator = new Validator(['required', new HexColor(3)]);
-
-// validate against given values
-$valid = $validator->validate('#ccc'); // true
-$valid = $validator->validate('www'); // false
-
-// change the validation rules
-$validator->setRules([new Domainname]);
-
-// now validate new rule domainname
-$valid = $validator->validate('foo.com'); // true
-$valid = $validator->validate('?'); // false
-
-// validator can also throw exceptions on invalid data. 
-// just call assert() instead of validate().
-try {
-    $validator->assert('foobar');
-} catch (ValidationException $e) {
-    echo $e->getMessage();
-}
-```
-
-## Static Usage
-
-```php
-use Intervention\Validation\Validator;
-use Intervention\Validation\Rules\HexColor;
-use Intervention\Validation\Exception\ValidationException;
-
-// create validator statically
-$valid = Validator::make([new HexColor])->validate('ccc'); // true
-$valid = Validator::make([new HexColor])->validate('#www'); // false
-
-// throw exceptions on invalid data instead of returning boolean
-try {
-    Validator::make([new HexColor])->assert('www');
-} catch (ValidationException $e) {
-    echo $e->getMessage();
-}
-```
-
-## Static dynamic call Usage
-
-```php
-use Intervention\Validation\Validator;
-use Intervention\Validation\Rules\HexColor;
-use Intervention\Validation\Exception\ValidationException;
-
-// call validation rule directly via static method
-$valid = Validator::isHexColor('#ccc'); // true
-$valid = Validator::isHexColor('#www'); // false
-
-// throw exceptions on invalid data
-try {
-    Validator::assertHexColor('foo');
-} catch (ValidationException $e) {
-    echo $e->getMessage();
-}
-```
-
-## Usage with Laravel
-
-The installed package provides additional `validation rules` including their error messages.
+The Validation library is built to work with the Laravel Framework (>=7). It comes with a service provider, which will be discovered automatically and registers the validation rules into your installation. The package provides 30 additional validation rules including error messages.
 
 ```php
 use Illuminate\Support\Facades\Validator;
 use Intervention\Validation\Rules\Creditcard;
+use Intervention\Validation\Rules\HexColor;
+use Intervention\Validation\Rules\Username;
 
 $validator = Validator::make($request->all(), [
-    'ccnumber' => 'required|creditcard',
-    'number' => 'iban',
-    'color' => new Hexcolor(3), // passing rules as objects is also possible
+    'color' => new Hexcolor(3), // pass rule as object
     'name' => ['required', 'min:3', 'max:20', new Username()], // combining rules works as well
 ]);
 ```
+
+**Make sure to pass any of the additional validation rules as objects and not as strings.** 
 
 ### Changing the error messages:
 
@@ -110,128 +40,279 @@ Add the corresponding key to `/resources/lang/<language>/validation.php` like th
 // example
 'iban' => 'Please enter IBAN number!',
 ```
-
 Or add your custom messages directly to the validator like [described in the docs](https://laravel.com/docs/8.x/validation#manual-customizing-the-error-messages).
 
-## Available Rules
+## Standalone usage
 
-The following validation rules are available.
+It is also possible to use this library without the Laravel framework. You won't have the Laravel facades available, so make sure to use `Intervention\Validation\Validator` for your calls.
 
-### base64 (Intervention\Validation\Rules\Base64)
+```php
+use Intervention\Validation\Validator;
+use Intervention\Validation\Rules\Creditcard;
+use Intervention\Validation\Exceptions\ValidationException;
 
-Checks if given value is [Base64 encoded](https://en.wikipedia.org/wiki/Base64).
+// use static factory method to create laravel validator
+$validator = Validator::make($request->all(), [
+    'ccnumber' => new Creditcard(),
+    'iban' => ['required', new Iban()],
+]);
 
-### bic (Intervention\Validation\Rules\Bic)
+// validate single values by calling static methods
+$result = Validator::isHexcolor('foobar'); // false
+$result = Validator::isHexcolor('#ccc'); // true
+$result = Validator::isBic('foo'); // false
+
+// assert single values
+try {
+    Validator::assertHexcolor('foobar');
+} catch (ValidationException $e) {
+    $message = $e->getMessage();
+}
+```
+
+# Available Rules
+
+The following validation rules are available with this package.
+
+## Base64 encoded string
+
+The field under validation must be [Base64 encoded](https://en.wikipedia.org/wiki/Base64).
+
+    public Intervention\Validation\Rules\Base64::__construct()
+
+## Business Identifier Code (BIC)
 
 Checks for a valid [Business Identifier Code](https://en.wikipedia.org/wiki/ISO_9362) (BIC).
 
-### camelcase (Intervention\Validation\Rules\CamelCase)
+    public Intervention\Validation\Rules\Bic::__construct()
 
-The given field must be a formated in [Camel case](https://en.wikipedia.org/wiki/Camel_case).
+## Camel case string
 
-### cidr (Intervention\Validation\Rules\Cidr)
+The field under validation must be a formated in [Camel case](https://en.wikipedia.org/wiki/Camel_case).
+
+    public Intervention\Validation\Rules\Camelcase::__construct()
+
+## Classless Inter-Domain Routing (CIDR) 
 
 Check if the value is a [Classless Inter-Domain Routing](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing) notation (CIDR).
 
-### creditcard (Intervention\Validation\Rules\Creditcard)
+    public Intervention\Validation\Rules\Cidr::__construct()
 
-The given field must be a valid [creditcard number](https://en.wikipedia.org/wiki/Payment_card_number).
+## Creditcard Number 
 
-### data url (Intervention\Validation\Rules\DataUrl)
+The field under validation must be a valid [creditcard number](https://en.wikipedia.org/wiki/Payment_card_number).
 
-The given field must be a valid [data url](https://en.wikipedia.org/wiki/Data_URI_scheme).
+    public Intervention\Validation\Rules\Creditcard::__construct()
 
-### domainname (Intervention\Validation\Rules\Domainname)
+## Data URI scheme
 
-The given field must be a well formed [domainname](https://en.wikipedia.org/wiki/Domain_name).
+The field under validation must be a valid [Data URI](https://en.wikipedia.org/wiki/Data_URI_scheme).
 
-### ean (Intervention\Validation\Rules\Ean)
+    public Intervention\Validation\Rules\DataUri::__construct()
 
-Checks for a valid [European Article Number](https://en.wikipedia.org/wiki/International_Article_Number) (EAN-8 and EAN-13).
+## Domain name 
 
-### gtin (Intervention\Validation\Rules\Gtin)
+The field under validation must be a well formed [domainname](https://en.wikipedia.org/wiki/Domain_name).
 
-Checks for a valid [Global Trade Item Number](https://en.wikipedia.org/wiki/Global_Trade_Item_Number) (GTIN-8, GTIN-12, GTIN-13 or GTIN-14).
+    public Intervention\Validation\Rules\Domainname::__construct()
 
-### hexcolor (Intervention\Validation\Rules\HexColor)
+## European Article Number (EAN)
 
-The field under validation must be a valid [hexadecimal color code](https://en.wikipedia.org/wiki/Web_colors).
+Checks for a valid [European Article Number](https://en.wikipedia.org/wiki/International_Article_Number).
 
-### htmlclean (Intervention\Validation\Rules\HtmlClean)
+    public Intervention\Validation\Rules\Ean::__construct(?int $length = null)
+
+#### Parameters
+
+**length**
+
+Optional integer length (8 or 13) to check only for EAN-8 or EAN-13.
+
+## Global Trade Item Number (GTIN)
+
+Checks for a valid [Global Trade Item Number](https://en.wikipedia.org/wiki/Global_Trade_Item_Number).
+
+    public Intervention\Validation\Rules\Gtin::__construct(?int $length = null)
+
+#### Parameters
+
+**length**
+
+Optional integer length to check only for certain types (GTIN-8, GTIN-12, GTIN-13 or GTIN-14).
+
+## Hexadecimal color code
+
+The field under validation must be a valid [hexadecimal color code](https://en.wikipedia.org/wiki/Web_colors). 
+
+    public Intervention\Validation\Rules\HexColor::__construct(?int $length = null)
+
+#### Parameters
+
+**length**
+
+Optional length as integer to check only for shorthand (3 characters) or full hexadecimal (6 characters) form.
+
+## Text without HTML
 
 The field under validation must be free of any html code.
 
-### iban (Intervention\Validation\Rules\Iban)
+    public Intervention\Validation\Rules\HtmlClean::__construct()
+
+## International Bank Account Number (IBAN)
 
 Checks for a valid [International Bank Account Number](https://en.wikipedia.org/wiki/International_Bank_Account_Number) (IBAN).
 
-### imei (Intervention\Validation\Rules\Imei)
+    public Intervention\Validation\Rules\Iban::__construct()
 
-The given field must be a [International Mobile Equipment Identity](https://en.wikipedia.org/wiki/International_Mobile_Equipment_Identity) (IMEI).
+## International Mobile Equipment Identity (IMEI) 
 
-### isbn (Intervention\Validation\Rules\Isbn)
+The field under validation must be a [International Mobile Equipment Identity](https://en.wikipedia.org/wiki/International_Mobile_Equipment_Identity) (IMEI).
+
+    public Intervention\Validation\Rules\Imei::__construct()
+
+## International Standard Book Number (ISBN)
 
 The field under validation must be a valid [International Standard Book Number](https://en.wikipedia.org/wiki/International_Standard_Book_Number) (ISBN).
 
-### isin (Intervention\Validation\Rules\Isin)
+    public Intervention\Validation\Rules\Isbn::__construct(?int $length = null)
+
+#### Parameters
+
+**length**
+
+Optional length parameter as integer to check only for ISBN-10 or ISBN-13.
+
+## International Securities Identification Number (ISIN) 
 
 Checks for a valid [International Securities Identification Number](https://en.wikipedia.org/wiki/International_Securities_Identification_Number) (ISIN).
 
-### issn (Intervention\Validation\Rules\Issn)
+    public Intervention\Validation\Rules\Isin::__construct()
+
+## International Standard Serial Number (ISSN)
 
 Checks for a valid [International Standard Serial Number](https://en.wikipedia.org/wiki/International_Standard_Serial_Number) (ISSN).
 
-### jwt (Intervention\Validation\Rules\Jwt)
+    public Intervention\Validation\Rules\Issn::__construct()
+
+## JSON Web Token (JWT)
 
 The given value must be a in format of a [JSON Web Token](https://en.wikipedia.org/wiki/JSON_Web_Token).
 
-### kebabcase (Intervention\Validation\Rules\KebabCase)
+    public Intervention\Validation\Rules\Jwt::__construct()
+
+## Kebab case string
 
 The given value must be formated in [Kebab case](https://en.wikipedia.org/wiki/Letter_case#Special_case_styles).
 
-### lowercase (Intervention\Validation\Rules\LowerCase)
+    public Intervention\Validation\Rules\Kebabcase::__construct()
+
+## Lower case string 
 
 The given value must be all lower case letters.
 
-### luhn (Intervention\Validation\Rules\Luhn)
+    public Intervention\Validation\Rules\Lowercase::__construct()
+
+## Luhn algorithm
 
 The given value must verify against its included [Luhn algorithm](https://en.wikipedia.org/wiki/Luhn_algorithm) check digit.
 
-### macaddress (Intervention\Validation\Rules\MacAddress)
+    public Intervention\Validation\Rules\Luhn::__construct()
+
+## MAC address 
 
 The field under validation must be a [media access control address](https://en.wikipedia.org/wiki/MAC_address) (MAC address).
 
-### mimetype (Intervention\Validation\Rules\MimeType)
+    public Intervention\Validation\Rules\MacAddress::__construct()
+
+## Media (MIME) type
 
 Checks for a valid [Mime Type](https://en.wikipedia.org/wiki/Media_type) (Media type).
 
-### semver (Intervention\Validation\Rules\SemVer)
+    public Intervention\Validation\Rules\MimeType::__construct()
 
-The given field must be a valid version numbers using [Semantic Versioning](https://semver.org/).
+## Postal Code
 
-### slug (Intervention\Validation\Rules\Slug)
+The field under validation must be a [postal code](https://en.wikipedia.org/wiki/Postal_code) of the given country.
+
+    public Intervention\Validation\Rules\Postalcode::__construct(string $countrycode)
+
+#### Parameters
+
+**countrycode**
+
+Country code in [ISO-639-1](https://en.wikipedia.org/wiki/ISO_639-1) format.
+
+### Postal Code (static instantiation)
+
+    public static Intervention\Validation\Rules\Postalcode::countrycode(string $countrycode): Postalcode
+
+#### Parameters
+
+**countrycode**
+
+Country code in [ISO-639-1](https://en.wikipedia.org/wiki/ISO_639-1) format.
+
+### Postal Code (static instantiation with callback)
+
+    public static Intervention\Validation\Rules\Postalcode::resolve(callable $callback): Postalcode
+
+#### Parameters
+
+**callback**
+
+Callback to resolve [ISO-639-1](https://en.wikipedia.org/wiki/ISO_639-1) country code from other source.
+
+### Postal Code (static instantiation with reference)
+
+    public static Intervention\Validation\Rules\Postalcode::reference(string $reference): Postalcode
+
+#### Parameters
+
+**reference**
+
+Reference key to get [ISO-639-1](https://en.wikipedia.org/wiki/ISO_639-1) country code from other data in validator.
+
+## Semantic Version Number
+
+The field under validation must be a valid version numbers using [Semantic Versioning](https://semver.org/).
+
+    public Intervention\Validation\Rules\SemVer::__construct()
+
+## SEO-friendly short text (Slug)
 
 The field under validation must be a user- and [SEO-friendly short text](https://en.wikipedia.org/wiki/Clean_URL#Slug).
 
-### snakecase (Intervention\Validation\Rules\SnakeCase)
+    public Intervention\Validation\Rules\Slug::__construct()
+
+## Snake case string
 
 The field under validation must formated as [Snake case](https://en.wikipedia.org/wiki/Snake_case) text.
 
-### titlecase (Intervention\Validation\Rules\TitleCase)
+    public Intervention\Validation\Rules\Snakecase::__construct()
+
+## Title case string
 
 The field under validation must formated in [Title case](https://en.wikipedia.org/wiki/Title_case).
 
-### ulid (Intervention\Validation\Rules\Ulid)
+    public Intervention\Validation\Rules\Titlecase::__construct()
 
-The given field must be a valid [Universally Unique Lexicographically Sortable Identifier](https://github.com/ulid/spec).
+## Universally Unique Lexicographically Sortable Identifier (ULID)
 
-### uppercase (Intervention\Validation\Rules\UpperCase)
+The field under validation must be a valid [Universally Unique Lexicographically Sortable Identifier](https://github.com/ulid/spec).
+
+    public Intervention\Validation\Rules\Ulid::__construct()
+
+## Upper case string
 
 The field under validation must be all upper case.
 
-### username (Intervention\Validation\Rules\Username)
+    public Intervention\Validation\Rules\Uppercase::__construct()
+
+## Username
 
 The field under validation must be a valid username. Consisting of alpha-numeric characters, underscores, minus and starting with a alphabetic character. Multiple underscore and minus chars are not allowed. Underscore and minus chars are not allowed at the beginning or end.
+
+    public Intervention\Validation\Rules\Username::__construct()
 
 ## License
 

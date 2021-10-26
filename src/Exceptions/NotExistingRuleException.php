@@ -1,6 +1,6 @@
 <?php
 
-namespace Intervention\Validation\Exception;
+namespace Intervention\Validation\Exceptions;
 
 use RuntimeException;
 

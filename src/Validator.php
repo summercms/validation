@@ -8,88 +8,19 @@ use Illuminate\Translation\FileLoader;
 use Illuminate\Translation\Translator;
 use Illuminate\Validation\Factory;
 use Illuminate\Validation\Validator as IlluminateValidator;
-use Intervention\Validation\Validator;
+use Intervention\Validation\Exceptions\ValidationException;
 
 class Validator
 {
-    protected $rules = [];
+    use Traits\HasCurrentLocale;
 
-    public function __construct(array $rules)
+    public static function make(array $data, array $rules): IlluminateValidator
     {
-        $this->rules = $rules;
+        return self::factory()->make($data, $rules);
     }
 
     /**
-     * Static factory method
-     *
-     * @param  array  $rules
-     * @return Validator
-     */
-    public static function make(array $rules): self
-    {
-        return new self($rules);
-    }
-
-    /**
-     * Set set of rules to validate against
-     *
-     * @param array $rules
-     */
-    public function setRules(array $rules): self
-    {
-        $this->rules = $rules;
-
-        return $this;
-    }
-
-    /**
-     * Determine if the given value is valid for the current rules
-     *
-     * @param  string $value
-     * @return bool
-     */
-    public function validate($value): bool
-    {
-        $data = ['value' => $value];
-        $rules = ['value' => $this->rules];
-
-        return $this->validation($data, $rules)->passes();
-    }
-
-    /**
-     * Throw exception if the given value is not valid
-     *
-     * @param  string $value
-     * @return void
-     */
-    public function assert($value): void
-    {
-        if (! $this->validate($value)) {
-            throw new Exception\ValidationException(
-                sprintf(
-                    'Error validating value (%s)',
-                    $value
-                )
-            );
-        }
-    }
-
-    /**
-     * Create validation engine
-     *
-     * @return IlluminateValidator
-     */
-    protected function validation($data, $rules): IlluminateValidator
-    {
-        $loader = new FileLoader(new Filesystem(), 'lang');
-        $translator = new Translator($loader, 'en');
-        $validation = new Factory($translator, new Container());
-
-        return $validation->make($data, $rules);
-    }
-
-    /**
-     * Magic method for static calls
+     * Magic method for static calls, to call single rules directly
      *
      * @param  string $name
      * @param  array  $arguments
@@ -97,9 +28,26 @@ class Validator
      */
     public static function __callStatic(string $name, array $arguments): bool
     {
-        $delegation = (new CallDelegator($name, $arguments));
-        $rules = ['required', $delegation->getRule()];
+        $delegation = new CallDelegator($name, $arguments);
+        $rule = $delegation->getRule();
+        $passes = self::make(['value' => $delegation->getValue()], ['value' => ['required', $rule]])->passes();
 
-        return call_user_func_array([new self($rules), $delegation->getAction()], [$delegation->getValue()]);
+        if ($delegation->isAssertion() && $passes === false) {
+            throw new ValidationException('Failed asserting that value applies to rule "' . get_class($rule) . '".');
+        }
+
+        return $passes;
+    }
+
+    protected static function factory(): Factory
+    {
+        $loader = new FileLoader(new Filesystem(), __DIR__ . '/lang');
+        $translator = new Translator($loader, self::getCurrentLocale());
+        $factory = new Factory($translator, new Container());
+        $factory->resolver(function ($translator, $data, $rules, $messages, $customAttributes) {
+            return new IlluminateValidator($translator, $data, $rules, $messages, $customAttributes);
+        });
+
+        return $factory;
     }
 }

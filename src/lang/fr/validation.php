@@ -25,8 +25,10 @@ return [
     'kebabcase' => 'Le champ :attribute doit être formaté en "kebab-case" : mots composés de lettres minuscules, séparés par des tirets.',
     'camelcase' => 'Le champ :attribute doit être formaté en "CamelCase" : mots composés de lettres minuscules commençant chacun par une lettre majuscule, liés les uns aux autres sans espace.',
     'cidr' => 'Le champ :attribute doit être un format CIDR valide.',
-    'dataurl' => 'Le :attribute doit être un Data URL valide.',
+    'datauri' => 'Le :attribute doit être un Data URL valide.',
     'ulid' => 'Le :attribute doit être un ULID valide.',
     'ean' => 'Le :attribute doit être un EAN valide.',
     'gtin' => 'Le :attribute doit être un GTIN valide.',
+    'postalcode' => 'La valeur :attribute doit être un code postal valide.',
+    'mimetype' => 'La valeur :attribute ne contient pas de type de média Internet valide (type MIME).',
 ];

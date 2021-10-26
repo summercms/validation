@@ -25,8 +25,10 @@ return [
     'kebabcase' => 'Der Inhalt :attribute muss in Kebab Case formatiert sein.',
     'camelcase' => 'Der Inhalt :attribute muss in Camel Case formatiert sein.',
     'cidr' => ':attribute ist keine gültige CIDR Notation.',
-    'dataurl' => ':attribute ist keine gültige Data-URL.',
+    'datauri' => ':attribute ist keine gültige Data-URL.',
     'ulid' => ':attribute ist keine gültige ULID.',
     'ean' => 'Der Wert :attribute ist keine gültige European Article Number (EAN).',
     'gtin' => 'Der Wert :attribute ist keine gültige Global Trade Item Number (GTIN).',
+    'postalcode' => 'Der Wert :attribute muss eine gültige Postleitzahl sein.',
+    'mimetype' => 'Der Wert :attribute einhält keinen gültigen Internet Media Type (MIME-Type).',
 ];

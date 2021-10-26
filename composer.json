@@ -1,6 +1,6 @@
 {
     "name": "intervention/validation",
-    "description": "Additional Validator Functions for the Laravel Framework",
+    "description": "Additional validation rules for the Laravel framework",
     "keywords": ["validation", "Validator", "laravel", "bic", "iban", "creditcard", "isbn", "ean", "gtin", "isin", "luhn", "base64", "data-url", "ulid"],
     "license": "MIT",
     "authors": [
@@ -11,7 +11,7 @@
         }
     ],
     "require": {
-        "php": "^7.4|^8.0",
+        "php": "^7.3|^7.4|^8.0",
         "illuminate/validation": "~7|~8"
     },
     "require-dev": {

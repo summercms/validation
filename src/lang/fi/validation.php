@@ -25,8 +25,10 @@ return [
     'snakecase' => ':attribute tulee olla käytetty snake case kirjoitusasua.',
     'camelcase' => ':attribute tulee olla käytetty camel case kirjoitusasua.',
     'cidr' => ':attribute tulee olla kelvollinen CIDR muoto.',
-    'dataurl' => ':attribute on oltava kelvollinen data-URL.',
+    'datauri' => ':attribute on oltava kelvollinen data-URL.',
     'ulid' => ':attribute on oltava kelvollinen ULID.',
     'ean' => ':attribute on oltava kelvollinen EAN.',
     'gtin' => ':attribute on oltava kelvollinen GTIN.',
+    'postalcode' => 'Arvo :attribute on oltava kelvollinen postinumero.',
+    'mimetype' => 'Arvo :attribute ei sisällä kelvollista Internet -mediatyyppiä (MIME-Type).',
 ];

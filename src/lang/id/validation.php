@@ -25,8 +25,10 @@ return [
     'kebabcase' => 'Isi :attribute harus berupa format Kebab case.',
     'camelcase' => 'Isi :attribute harus berupa format Camel case.',
     'cidr' => ':attribute harus berupa format CIDR yang valid.',
-    'dataurl' => ':attribute harus berupa url data yang valid.',
+    'datauri' => ':attribute harus berupa url data yang valid.',
     'ulid' => ':attribute harus berupa format ULID yang valid.',
     'ean' => ':attribute harus berupa format EAN yang valid.',
     'gtin' => ':attribute harus berupa format GTIN yang valid.',
+    'postalcode' => 'Nilai :attribute harus berupa kode pos yang valid.',
+    'mimetype' => 'Nilai :attribute tidak berisi Jenis Media Internet yang valid (jenis MIME).',
 ];

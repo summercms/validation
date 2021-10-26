@@ -2,62 +2,50 @@
 
 namespace Intervention\Validation\Test;
 
-use Intervention\Validation\AbstractRule;
-use Intervention\Validation\Exception\ValidationException;
+use Illuminate\Validation\Validator as IlluminateValidator;
+use Intervention\Validation\Exceptions\ValidationException;
 use Intervention\Validation\Rules\Hexcolor;
-use Intervention\Validation\Rules\Iban;
 use Intervention\Validation\Validator;
 use PHPUnit\Framework\TestCase;
 
 class ValidatorTest extends TestCase
 {
-    public function testConstructor()
-    {
-        $validator = new Validator([]);
-        $this->assertInstanceOf(Validator::class, $validator);
-    }
-
     public function testMake()
     {
-        $validator = Validator::make([]);
-        $this->assertInstanceOf(Validator::class, $validator);
+        $validator = Validator::make([], []);
+        $this->assertInstanceOf(IlluminateValidator::class, $validator);
     }
 
-    public function testSetRules()
+    public function testIsRule()
     {
-        $validator = new Validator([new Iban()]);
-        $this->assertFalse($validator->validate('ccc'));
-        $validator->setRules([new Hexcolor()]);
-        $this->assertTrue($validator->validate('ccc'));
+        $this->assertTrue(Validator::isHexcolor('ccc'));
+        $this->assertFalse(Validator::isHexcolor('zzz'));
+        $this->assertFalse(Validator::isHexcolor('ccc', 6));
+        $this->assertTrue(Validator::isHexcolor('cccccc', 6));
     }
 
-    public function testValidate()
-    {
-        $validator = new Validator([]);
-        $this->assertIsBool($validator->validate('foo'));
-        $this->assertIsBool($validator->validate('bar'));
-    }
-
-    public function testAssert()
-    {
-        $validator = new Validator([new Hexcolor()]);
-        $this->expectException(ValidationException::class);
-        $validator->assert('foo');
-    }
-
-    public function testDynamicStaticValidateValid()
-    {
-        $this->assertTrue(Validator::isHexColor('#cccccc'));
-    }
-
-    public function testDynamicStaticValidateInvalid()
-    {
-        $this->assertFalse(Validator::isHexColor('foo'));
-    }
-
-    public function testDynamicStaticAssert()
+    public function testAssertFail()
     {
         $this->expectException(ValidationException::class);
-        Validator::assertHexColor('foo');
+        Validator::assertHexcolor('zzz');
+    }
+
+    public function testAssertSuccess()
+    {
+        $result = Validator::assertHexcolor('ccc');
+        $this->assertTrue($result);
+    }
+
+    public function testErrorMessages()
+    {
+        locale_set_default('en');
+        $validator = Validator::make(['value' => 'zzz'], ['value' => new Hexcolor()]);
+        $message = 'The value must be a valid hexadecimal color code.';
+        $this->assertEquals($message, $validator->errors()->first('value'));
+
+        locale_set_default('de');
+        $validator = Validator::make(['value' => 'zzz'], ['value' => new Hexcolor()]);
+        $message = 'Der Wert value muss einen gültigen Hexadezimal Farbwert enthalten.';
+        $this->assertEquals($message, $validator->errors()->first('value'));
     }
 }
